@@ -77,6 +77,8 @@
             const location = results[0].geometry.location;
             map.setCenter(location);
             map.setZoom(12);
+          } else {
+            console.error('Geocode was not successful for the following reason: ' + status);
           }
         });
       }
@@ -119,6 +121,7 @@
             });
           } else {
             document.getElementById("results").innerHTML = "Ciudad no encontrada.";
+            console.error('Geocode was not successful for the following reason: ' + status);
           }
         });
       }

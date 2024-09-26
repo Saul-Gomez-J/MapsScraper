@@ -1,0 +1,13 @@
+# Ignorar el archivo de configuración de entorno
+.env
+
+# Ignorar el directorio de entorno virtual
+env/
+
+# Ignorar cachés de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
