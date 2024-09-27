@@ -8,6 +8,10 @@ from urllib.parse import quote
 import re
 from bs4 import BeautifulSoup
 
+# Set page config at the very beginning
+st.set_page_config(page_title="Extractor de Información de Negocios", layout="wide")
+
+# Custom CSS
 st.markdown(
     """
     <style>
@@ -66,39 +70,30 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-# st.write(st.get_option("theme.primaryColor"))
-# st.write(st.get_option("theme.backgroundColor"))
-# Intenta cargar las variables del archivo .env (desarrollo local)
+
+# Load environment variables
 load_dotenv()
 
-# Configuración de la página
-st.set_page_config(page_title="Extractor de Información de Negocios", layout="wide")
-
-# Título de la aplicación
+# Title of the application
 st.title("Extractor de Información de Negocios")
 
-# Función para obtener la clave de API
+# Function to get API key
 def get_api_key():
     try:
-    # Primero, intenta obtener la clave de Streamlit Secrets
         api_key = st.secrets.get("GOOGLE_API_KEY")    
         return api_key
-    
     except (KeyError, FileNotFoundError):
-    # Si no está en Streamlit Secrets, intenta obtenerla de las variables de entorno
         api_key = os.getenv("GOOGLE_API_KEY")
         if api_key is not None:
             return api_key
-    
-    # Si no se encuentra la clave, lanza un error
         raise ValueError("No se encontró la clave de API de Google. Por favor, configura la variable de entorno GOOGLE_API_KEY.")
 
-# Función para crear el mapa
+# Function to create map
 def create_map(lat, lon, zoom=12):
     m = folium.Map(location=[lat, lon], zoom_start=zoom)
     return m
 
-# Función para buscar correos electrónicos en una página web
+# Function to find emails on a webpage
 def find_emails(url):
     try:
         response = requests.get(url, timeout=5)
@@ -106,12 +101,12 @@ def find_emails(url):
             soup = BeautifulSoup(response.text, 'html.parser')
             email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
             emails = re.findall(email_regex, soup.get_text())
-            return list(set(emails))  # Eliminar duplicados
+            return list(set(emails))  # Remove duplicates
     except:
         pass
     return []
 
-# Controles de entrada
+# Input controls
 col1, col2, col3 = st.columns(3)
 with col1:
     city = st.text_input("Ciudad:", "Barcelona")
@@ -120,22 +115,22 @@ with col2:
 with col3:
     radius = st.number_input("Radio (metros):", value=500, min_value=100, max_value=5000)
 
-# Obtener la API Key
+# Get API Key
 try:
     api_key = get_api_key()
 except ValueError as e:
     st.error(str(e))
     st.stop()
 
-# Botones
+# Buttons
 if st.button("Buscar"):
     if not type_of_business:
         st.warning("Por favor, ingrese un tipo de negocio.")
     else:
-        # Codificar la ciudad para la URL
+        # Encode city for URL
         encoded_city = quote(city)
         
-        # Lógica para buscar lugares
+        # Logic to search places
         geocode_url = f"https://maps.googleapis.com/maps/api/geocode/json?address={encoded_city}&key={api_key}"
         geocode_response = requests.get(geocode_url).json()
         
@@ -143,7 +138,7 @@ if st.button("Buscar"):
             location = geocode_response['results'][0]['geometry']['location']
             lat, lng = location['lat'], location['lng']
             
-            # Crear y mostrar el mapa
+            # Create and display map
             m = create_map(lat, lng)
             folium_static(m)
             
@@ -166,7 +161,7 @@ if st.button("Buscar"):
                                 website = place_details.get('website', 'N/A')
                                 st.write(f"**Sitio Web:** {website}")
                                 
-                                # Buscar correos electrónicos si hay un sitio web disponible
+                                # Search for emails if website is available
                                 if website != 'N/A':
                                     emails = find_emails(website)
                                     if emails:
@@ -182,16 +177,16 @@ if st.button("Buscar"):
                                     photo_url = f"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={photo_reference}&key={api_key}"
                                     st.image(photo_url, width=150)
                         
-                        # Añadir marcador al mapa
+                        # Add marker to map
                         folium.Marker(
                             [place_details['geometry']['location']['lat'], place_details['geometry']['location']['lng']],
                             popup=place_details.get('name', 'Negocio sin nombre')
                         ).add_to(m)
                 
-                # Actualizar el mapa con los marcadores
+                # Update map with markers
                 folium_static(m)
             else:
-                st.error("No se encontraron resultados,.")
+                st.error("No se encontraron resultados.")
         else:
             st.error(f"Ciudad no encontrada. Status: {geocode_response['status']}")
 
