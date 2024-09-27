@@ -8,7 +8,6 @@ from urllib.parse import quote
 import re
 from bs4 import BeautifulSoup
 
-# Inyectar el CSS personalizado para las fuentes
 st.markdown(
     """
     <style>
@@ -67,8 +66,9 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-# Cargar las variables del archivo .env (desarrollo local)
+# st.write(st.get_option("theme.primaryColor"))
+# st.write(st.get_option("theme.backgroundColor"))
+# Intenta cargar las variables del archivo .env (desarrollo local)
 load_dotenv()
 
 # Configuración de la página
@@ -80,17 +80,17 @@ st.title("Extractor de Información de Negocios")
 # Función para obtener la clave de API
 def get_api_key():
     try:
-        # Primero, intenta obtener la clave de Streamlit Secrets
+    # Primero, intenta obtener la clave de Streamlit Secrets
         api_key = st.secrets.get("GOOGLE_API_KEY")    
         return api_key
     
     except (KeyError, FileNotFoundError):
-        # Si no está en Streamlit Secrets, intenta obtenerla de las variables de entorno
+    # Si no está en Streamlit Secrets, intenta obtenerla de las variables de entorno
         api_key = os.getenv("GOOGLE_API_KEY")
         if api_key is not None:
             return api_key
     
-        # Si no se encuentra la clave, lanza un error
+    # Si no se encuentra la clave, lanza un error
         raise ValueError("No se encontró la clave de API de Google. Por favor, configura la variable de entorno GOOGLE_API_KEY.")
 
 # Función para crear el mapa
@@ -191,7 +191,7 @@ if st.button("Buscar"):
                 # Actualizar el mapa con los marcadores
                 folium_static(m)
             else:
-                st.error("No se encontraron resultados.")
+                st.error("No se encontraron resultados,.")
         else:
             st.error(f"Ciudad no encontrada. Status: {geocode_response['status']}")
 
