@@ -5,6 +5,8 @@ import os
 from dotenv import load_dotenv
 from streamlit_folium import folium_static
 from urllib.parse import quote
+import re
+from bs4 import BeautifulSoup
 
 # Intenta cargar las variables del archivo .env (desarrollo local)
 load_dotenv()
@@ -17,23 +19,37 @@ st.title("Extractor de Información de Negocios")
 
 # Función para obtener la clave de API
 def get_api_key():
+    try:
     # Primero, intenta obtener la clave de Streamlit Secrets
-    api_key = st.secrets.get("GOOGLE_API_KEY")
-    if api_key is not None:
+        api_key = st.secrets.get("GOOGLE_API_KEY")    
         return api_key
     
+    except (KeyError, FileNotFoundError):
     # Si no está en Streamlit Secrets, intenta obtenerla de las variables de entorno
-    api_key = os.getenv("GOOGLE_API_KEY")
-    if api_key is not None:
-        return api_key
+        api_key = os.getenv("GOOGLE_API_KEY")
+        if api_key is not None:
+            return api_key
     
     # Si no se encuentra la clave, lanza un error
-    raise ValueError("No se encontró la clave de API de Google. Por favor, configura la variable de entorno GOOGLE_API_KEY.")
+        raise ValueError("No se encontró la clave de API de Google. Por favor, configura la variable de entorno GOOGLE_API_KEY.")
 
 # Función para crear el mapa
 def create_map(lat, lon, zoom=12):
     m = folium.Map(location=[lat, lon], zoom_start=zoom)
     return m
+
+# Función para buscar correos electrónicos en una página web
+def find_emails(url):
+    try:
+        response = requests.get(url, timeout=5)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, 'html.parser')
+            email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+            emails = re.findall(email_regex, soup.get_text())
+            return list(set(emails))  # Eliminar duplicados
+    except:
+        pass
+    return []
 
 # Controles de entrada
 col1, col2, col3 = st.columns(3)
@@ -87,7 +103,19 @@ if st.button("Buscar"):
                             with col1:
                                 st.write(f"**Dirección:** {place_details.get('vicinity', 'N/A')}")
                                 st.write(f"**Valoración:** {place_details.get('rating', 'N/A')}")
-                                st.write(f"**Sitio Web:** {place_details.get('website', 'N/A')}")
+                                website = place_details.get('website', 'N/A')
+                                st.write(f"**Sitio Web:** {website}")
+                                
+                                # Buscar correos electrónicos si hay un sitio web disponible
+                                if website != 'N/A':
+                                    emails = find_emails(website)
+                                    if emails:
+                                        st.write(f"**Correos encontrados:** {', '.join(emails)}")
+                                    else:
+                                        st.write("**Correos encontrados:** Ninguno")
+                                else:
+                                    st.write("**Correos encontrados:** No se pudo buscar (sitio web no disponible)")
+                            
                             with col2:
                                 if place_details.get('photos'):
                                     photo_reference = place_details['photos'][0]['photo_reference']
