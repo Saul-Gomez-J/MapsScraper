@@ -131,7 +131,7 @@ if st.button("Buscar"):
                 # Actualizar el mapa con los marcadores
                 folium_static(m)
             else:
-                st.error("No se encontraron resultados.")
+                st.error("No se encontraron resultados,.")
         else:
             st.error(f"Ciudad no encontrada. Status: {geocode_response['status']}")
 
