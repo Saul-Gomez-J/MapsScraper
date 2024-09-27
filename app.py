@@ -8,6 +8,8 @@ from urllib.parse import quote
 import re
 from bs4 import BeautifulSoup
 
+# st.write(st.get_option("theme.primaryColor"))
+# st.write(st.get_option("theme.backgroundColor"))
 # Intenta cargar las variables del archivo .env (desarrollo local)
 load_dotenv()
 

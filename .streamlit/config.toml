@@ -1,8 +1,8 @@
 # .streamlit/config.toml
 
 [theme]
-primaryColor = "#008CCF"
-backgroundColor = "#2B2D31"
-secondaryBackgroundColor = "#202124"
-textColor = "#C5C7CA"
-font = "Saira"
+primaryColor="#008CCF"
+backgroundColor="#2B2D31"
+secondaryBackgroundColor="#202124"
+textColor="#C5C7CA"
+font="Saira"
